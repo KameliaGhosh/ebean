@@ -141,6 +141,8 @@ public class InternalConfiguration {
     Map<String, String> asOfTableMapping = beanDescriptorManager.deploy();
     Map<String, String> draftTableMap = beanDescriptorManager.getDraftTableMap();
 
+    beanDescriptorManager.scheduleBackgroundTrim();
+
     this.dataTimeZone = initDataTimeZone();
     this.binder = getBinder(typeManager, databasePlatform, dataTimeZone);
     this.cQueryEngine = new CQueryEngine(serverConfig, databasePlatform, binder, asOfTableMapping, draftTableMap);

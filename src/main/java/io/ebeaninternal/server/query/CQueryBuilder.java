@@ -250,7 +250,7 @@ class CQueryBuilder {
       // skip building the SqlTree and Sql string
       predicates.prepare(false);
       String sql = queryPlan.getSql();
-      return new CQueryRowCount(request, predicates, sql);
+      return new CQueryRowCount(queryPlan, request, predicates, sql);
     }
 
     predicates.prepare(true);
@@ -281,7 +281,7 @@ class CQueryBuilder {
     queryPlan = new CQueryPlan(request, sql, sqlTree, false, s.isIncludesRowNumberColumn(), predicates.getLogWhereSql());
     request.putQueryPlan(queryPlan);
 
-    return new CQueryRowCount(request, predicates, sql);
+    return new CQueryRowCount(queryPlan, request, predicates, sql);
   }
 
   /**

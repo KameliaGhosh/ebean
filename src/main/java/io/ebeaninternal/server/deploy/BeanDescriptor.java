@@ -90,6 +90,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -1470,6 +1471,24 @@ public class BeanDescriptor<T> implements MetaBeanInfo, BeanType<T> {
     for (CQueryPlan queryPlan : queryPlanCache.values()) {
       queryPlan.resetStatistics();
     }
+  }
+
+  /**
+   * Trim query plans not used since the passed in epoch time.
+   */
+  public List<CQueryPlan> trimQueryPlans(long unusedSince) {
+
+    List<CQueryPlan> list = new ArrayList<>();
+
+    Iterator<CQueryPlan> it = queryPlanCache.values().iterator();
+    while (it.hasNext()) {
+      CQueryPlan queryPlan = it.next();
+      if (queryPlan.getLastQueryTime() < unusedSince) {
+        it.remove();
+        list.add(queryPlan);
+      }
+    }
+    return list;
   }
 
   /**

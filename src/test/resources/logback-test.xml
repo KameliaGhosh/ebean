@@ -90,6 +90,8 @@
 
   <!--<logger name="org.avaje.classpath" level="INFO"/>-->
 
+  <!--<logger name="io.ebeaninternal.server.deploy" level="TRACE"/>-->
+
   <!--<logger name="io.ebeaninternal.server.autotune" level="TRACE"/>-->
 
   <!--<logger name="com.avaje.ebean.dbmigration.DdlRunner" level="DEBUG"/>-->

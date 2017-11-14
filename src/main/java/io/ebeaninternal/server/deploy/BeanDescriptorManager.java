@@ -48,6 +48,7 @@ import io.ebeaninternal.server.deploy.parse.TransientProperties;
 import io.ebeaninternal.server.properties.BeanPropertiesReader;
 import io.ebeaninternal.server.properties.BeanPropertyAccess;
 import io.ebeaninternal.server.properties.EnhanceBeanPropertyAccess;
+import io.ebeaninternal.server.query.CQueryPlan;
 import io.ebeaninternal.xmlmapping.XmlMappingReader;
 import io.ebeaninternal.xmlmapping.model.XmAliasMapping;
 import io.ebeaninternal.xmlmapping.model.XmColumnMapping;
@@ -79,6 +80,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Creates BeanDescriptors.
@@ -176,6 +178,8 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
 
   private final String asOfViewSuffix;
 
+  private final int queryPlanTTLSeconds;
+
   /**
    * Map of base tables to 'with history views' used to support 'as of' queries.
    */
@@ -229,6 +233,27 @@ public class BeanDescriptorManager implements BeanDescriptorMap {
     this.changeLogPrepare = config.changeLogPrepare(bootupClasses.getChangeLogPrepare());
     this.changeLogListener = config.changeLogListener(bootupClasses.getChangeLogListener());
     this.changeLogRegister = config.changeLogRegister(bootupClasses.getChangeLogRegister());
+    this.queryPlanTTLSeconds = serverConfig.getQueryPlanTTLSeconds();
+  }
+
+
+  /**
+   * Run periodic trim of query plans.
+   */
+  public void scheduleBackgroundTrim() {
+    backgroundExecutor.executePeriodically(this::trimQueryPlans, 30L, TimeUnit.SECONDS);
+  }
+
+  private void trimQueryPlans() {
+    long lastUsed = System.currentTimeMillis() - (queryPlanTTLSeconds * 1000L);
+    for (BeanDescriptor<?> descriptor : immutableDescriptorList) {
+      if (!descriptor.isEmbedded()) {
+        List<CQueryPlan> trimmedPlans = descriptor.trimQueryPlans(lastUsed);
+        if (!trimmedPlans.isEmpty()) {
+          logger.trace("trimmed {} query plans for type:{}", trimmedPlans.size(), descriptor.getName());
+        }
+      }
+    }
   }
 
   /**

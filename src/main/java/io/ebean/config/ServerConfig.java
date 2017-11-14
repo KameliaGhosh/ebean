@@ -30,6 +30,9 @@ import io.ebean.event.readaudit.ReadAuditPrepare;
 import io.ebean.meta.MetaInfoManager;
 import io.ebean.util.StringHelper;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import org.avaje.datasource.DataSourceConfig;
 
 import javax.sql.DataSource;
@@ -433,6 +436,13 @@ public class ServerConfig {
   private boolean expressionNativeIlike;
 
   private String jodaLocalTimeMode;
+
+  /**
+   * Time to live for query plans - defaults to 5 minutes.
+   */
+  @Getter
+  @Setter
+  private int queryPlanTTLSeconds = 60 * 5;
 
   /**
    * Set to true to globally disable L2 caching (typically for performance testing).
@@ -2534,6 +2544,7 @@ public class ServerConfig {
       dbTypeConfig.setGeometrySRID(srid);
     }
 
+    queryPlanTTLSeconds = p.getInt("queryPlanTTLSeconds", queryPlanTTLSeconds);
     docStoreOnly = p.getBoolean("docStoreOnly", docStoreOnly);
     disableL2Cache = p.getBoolean("disableL2Cache", disableL2Cache);
     explicitTransactionBeginMode = p.getBoolean("explicitTransactionBeginMode", explicitTransactionBeginMode);
